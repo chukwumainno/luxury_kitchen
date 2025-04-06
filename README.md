@@ -31,7 +31,7 @@ A modern, feature-rich food ordering platform with a premium user experience, bu
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/luxury-kitchen.git
+git clone https://github.com/chukwumainno/luxury_kitchen.git
 cd luxury-kitchen
 ```
 
