@@ -1,0 +1,37 @@
+{
+  "name": "luxury-kitchen",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@types/lodash": "^4.17.16",
+    "jwt-decode": "^4.0.0",
+    "lodash": "^4.17.21",
+    "mongodb": "^6.3.0",
+    "next": "^15.2.4",
+    "next-auth": "^4.24.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-map-gl": "^7.1.7",
+    "socket.io": "^4.7.4",
+    "socket.io-client": "^4.7.4",
+    "stripe": "^14.11.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.1",
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.47",
+    "@types/react-dom": "^18.2.18",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "^14.1.0",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.3.3"
+  }
+}
