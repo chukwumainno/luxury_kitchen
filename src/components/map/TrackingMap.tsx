@@ -123,10 +123,12 @@ export default function TrackingMap({ currentStatus }: TrackingMapProps) {
         {/* Route path */}
         <Polyline
           positions={routePath}
-          color="#f97316"
-          weight={4}
-          opacity={0.7}
-          dashArray="10, 10"
+          pathOptions={{
+            color: "#f97316",
+            weight: 4,
+            opacity: 0.7,
+            dashArray: "10, 10"
+          }}
         />
       </MapContainer>
     </div>
