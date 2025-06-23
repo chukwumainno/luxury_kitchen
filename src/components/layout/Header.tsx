@@ -110,7 +110,7 @@ export default function Header() {
       </div>
 
       {/* Search Panel */}
-      <SearchPanel isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <SearchPanel isOpen={isSearchOpen} onCloseAction={() => setIsSearchOpen(false)} />
     </header>
   );
 } 

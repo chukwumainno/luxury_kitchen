@@ -8,7 +8,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { useCart } from '@/context/CartContext';
 import { menuItems, MenuItem } from '@/data/menuData';
 
-export default function FoodDetailPage({ params }: { params: { id: string } }) {
+export default function FoodDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { addItem } = useCart();
   
@@ -29,6 +29,7 @@ export default function FoodDetailPage({ params }: { params: { id: string } }) {
       </MainLayout>
     );
   }
+  
   // Initialize with the first size if available
   const [selectedSize, setSelectedSize] = useState(foodData.sizes?.[0]);
   
@@ -38,7 +39,7 @@ export default function FoodDetailPage({ params }: { params: { id: string } }) {
   
   // Calculate total price based on size and ingredients
   const calculateTotalPrice = () => {
-    let total = selectedSize?.price || 0;
+    let total = selectedSize?.price || foodData.price;
     
     // Add ingredient prices
     ingredients.forEach(ingredientId => {
@@ -51,33 +52,30 @@ export default function FoodDetailPage({ params }: { params: { id: string } }) {
     return total * quantity;
   };
 
-  // Add to cart
   const handleAddToCart = () => {
-    const selectedIngredients = foodData.addons?.
-      filter((i: { id: string; name: string; price: number }) => ingredients.includes(i.id))
-      .map((i: { name: string }) => i.name) || [];
-
-    addItem({
-      id: `${foodData.id}-${selectedSize?.id || 'default'}-${ingredients.join('-')}`,
+    const cartItem = {
+      id: `${foodData.id}-${selectedSize?.id || 'default'}-${Date.now()}`,
       name: foodData.name,
-      price: calculateTotalPrice() / quantity,
+      price: calculateTotalPrice() / quantity, // Price per item
       image: foodData.image,
       restaurant: foodData.restaurant,
       quantity: quantity,
-      size: selectedSize?.name || 'Regular',
-      ingredients: selectedIngredients,
-    });
+      size: selectedSize?.name,
+      ingredients: ingredients
+    };
     
+    addItem(cartItem);
+    
+    // Show success message or redirect
     router.push('/cart');
   };
 
-  // Toggle ingredient
   const toggleIngredient = (ingredientId: string) => {
-    if (ingredients.includes(ingredientId)) {
-      setIngredients(ingredients.filter(id => id !== ingredientId));
-    } else {
-      setIngredients([...ingredients, ingredientId]);
-    }
+    setIngredients(prev => 
+      prev.includes(ingredientId) 
+        ? prev.filter(id => id !== ingredientId)
+        : [...prev, ingredientId]
+    );
   };
 
   return (
@@ -106,31 +104,44 @@ export default function FoodDetailPage({ params }: { params: { id: string } }) {
             </svg>
           </button>
         </div>
-        
-        <div className="container">
-          {/* Food Info */}
-          <div className="bg-white p-6 rounded-t-3xl -mt-8 relative">
-            <h1 className="text-2xl font-bold text-gray-800">{foodData.name}</h1>
+
+        {/* Content */}
+        <div className="container py-6">
+          <div className="bg-white rounded-2xl p-6 -mt-8 relative z-10 shadow-lg">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800 mb-2">{foodData.name}</h1>
+                <p className="text-gray-600">{foodData.restaurant}</p>
+              </div>
+              <div className="text-right">
+                <span className="text-2xl font-bold text-primary">
+                  ${selectedSize?.price?.toFixed(2) || foodData.price.toFixed(2)}
+                </span>
+              </div>
+            </div>
             
-            <div className="flex items-center mt-2 mb-4">
+            <div className="flex items-center gap-4 mb-4">
               <div className="flex items-center text-sm text-gray-600">
-                <div className="text-yellow-500 mr-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                    <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
-                  </svg>
+                <div className="flex text-yellow-400 mr-1">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                      <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
+                    </svg>
+                  ))}
                 </div>
                 {foodData.rating} ({foodData.ratingCount})
               </div>
-              <div className="mx-2">•</div>
+              
               <div className="flex items-center text-sm text-gray-600">
-                <div className="text-orange-500 mr-1" aria-label="calories">
+                <div className="mr-1" aria-label="calories">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                    <path d="M11.47 1.72a.75.75 0 011.06 0l3 3a.75.75 0 11-1.06 1.06l-1.72-1.72V7.5h-1.5V4.06L9.53 5.78a.75.75 0 01-1.06-1.06l3-3zM11.25 7.5V15a.75.75 0 001.5 0V7.5h3.75a3 3 0 013 3v9a3 3 0 01-3 3h-9a3 3 0 01-3-3v-9a3 3 0 013-3h3.75z" />
+                    <path d="M17.004 10.407c.138.435-.216.842-.672.842h-3.465a.75.75 0 01-.65-.375l-1.732-3c-.229-.396-.053-.907.393-1.004a5.252 5.252 0 016.126 3.537zM8.12 8.464c.307-.338.838-.235 1.066.16l1.732 3a.75.75 0 010 .75l-1.732 3c-.229.397-.76.5-1.067.161C6.676 14.347 6 12.77 6 11s.676-3.347 2.12-4.536zM19.93 11.5c.446.089.63.59.394 1.001l-1.731 3a.75.75 0 01-.65.375h-3.465c-.457 0-.81-.407-.672-.842A5.252 5.252 0 0019.93 11.5z" />
+                    <path fillRule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5z" clipRule="evenodd" />
                   </svg>
                 </div>
-                {foodData.calories} Calories
+                {foodData.calories} cal
               </div>
-              <div className="mx-2">•</div>
+
               <div className="flex items-center text-sm text-gray-600">
                 <div className="mr-1" aria-label="time">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -167,80 +178,85 @@ export default function FoodDetailPage({ params }: { params: { id: string } }) {
             )}
             
             {/* Ingredients */}
-            {foodData.addons && foodData.addons.length > 0 && (
-              <div className="mb-8">
+            {foodData.ingredients && foodData.ingredients.length > 0 && (
+              <div className="mb-6">
                 <h2 className="text-lg font-semibold text-gray-800 mb-3">Add Ingredients</h2>
                 <div className="space-y-3">
-                  {foodData.addons.map((ingredient: {
-                    id: string;
-                    name: string;
-                    weight: string;
-                    price: number;
-                  }) => (
-                    <div 
-                      key={ingredient.id}
-                      className="flex items-center justify-between p-3 border rounded-lg"
-                    >
+                  {foodData.ingredients.map((ingredient: {id: string; name: string; price: number}) => (
+                    <label key={ingredient.id} className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
                       <div className="flex items-center">
-                        <div className="mr-3">
-                          <input
-                            type="checkbox"
-                            id={ingredient.id}
-                            className="w-5 h-5 accent-primary"
-                            checked={ingredients.includes(ingredient.id)}
-                            onChange={() => toggleIngredient(ingredient.id)}
-                          />
-                        </div>
+                        <input
+                          type="checkbox"
+                          checked={ingredients.includes(ingredient.id)}
+                          onChange={() => toggleIngredient(ingredient.id)}
+                          className="w-4 h-4 accent-primary mr-3"
+                        />
+                        <span className="text-gray-800">{ingredient.name}</span>
+                      </div>
+                      <span className="text-gray-600 font-medium">+${ingredient.price.toFixed(2)}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Add-ons */}
+            {foodData.addons && foodData.addons.length > 0 && (
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold text-gray-800 mb-3">Add-ons</h2>
+                <div className="space-y-3">
+                  {foodData.addons.map((addon: {id: string; name: string; weight: string; price: number}) => (
+                    <label key={addon.id} className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={ingredients.includes(addon.id)}
+                          onChange={() => toggleIngredient(addon.id)}
+                          className="w-4 h-4 accent-primary mr-3"
+                        />
                         <div>
-                          <label 
-                            htmlFor={ingredient.id}
-                            className="font-medium text-gray-800 block mb-0.5"
-                          >
-                            {ingredient.name}
-                          </label>
-                          <span className="text-sm text-gray-500">{ingredient.weight}</span>
+                          <span className="text-gray-800">{addon.name}</span>
+                          <span className="text-gray-500 text-sm ml-2">({addon.weight})</span>
                         </div>
                       </div>
-                      <div className="text-primary-700 font-medium">
-                        +${ingredient.price.toFixed(2)}
-                      </div>
-                    </div>
+                      <span className="text-gray-600 font-medium">+${addon.price.toFixed(2)}</span>
+                    </label>
                   ))}
                 </div>
               </div>
             )}
             
             {/* Quantity and Add to Cart */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 lg:static lg:border-0 lg:p-0 lg:mt-8">
-              <div className="container">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <button
-                      onClick={() => quantity > 1 && setQuantity(quantity - 1)}
-                      className="bg-gray-100 text-gray-700 rounded-full w-10 h-10 flex items-center justify-center"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
-                      </svg>
-                    </button>
-                    <span className="mx-4 font-semibold text-gray-800 w-5 text-center">{quantity}</span>
-                    <button
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="bg-gray-100 text-gray-700 rounded-full w-10 h-10 flex items-center justify-center"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                      </svg>
-                    </button>
-                  </div>
+            <div className="flex items-center justify-between bg-gray-50 rounded-xl p-4">
+              <div className="flex items-center">
+                <span className="text-gray-600 mr-4">Quantity</span>
+                <div className="flex items-center">
                   <button
-                    onClick={handleAddToCart}
-                    className="btn btn-primary px-8 py-3 flex-1 ml-6"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="w-8 h-8 rounded-full bg-white border border-gray-300 flex items-center justify-center"
                   >
-                    Add to Cart • ${calculateTotalPrice().toFixed(2)}
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
+                    </svg>
+                  </button>
+                  <span className="mx-4 font-semibold">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="w-8 h-8 rounded-full bg-white border border-gray-300 flex items-center justify-center"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
                   </button>
                 </div>
               </div>
+              
+              <button
+                onClick={handleAddToCart}
+                className="btn btn-primary px-8 py-3 font-semibold"
+              >
+                Add to Cart • ${calculateTotalPrice().toFixed(2)}
+              </button>
             </div>
           </div>
         </div>

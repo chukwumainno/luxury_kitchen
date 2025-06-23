@@ -5,6 +5,7 @@ import CategoryList from '@/components/food/CategoryList';
 import FoodCard from '@/components/food/FoodCard';
 import PromoBanner from '@/components/ui/PromoBanner';
 import SectionHeader from '@/components/ui/SectionHeader';
+import { menuItems } from '@/data/menuData';
 
 // Mock data for categories
 const categories = [
@@ -40,55 +41,14 @@ const categories = [
   }
 ];
 
-// Mock data for food items
-const bestSellers = [
-  {
-    id: 'jollof-rice-1',
-    name: 'Special Jollof Rice',
-    price: 10.99,
-    image: '/images/jollof_rice.jpeg',
-    restaurant: 'African Kitchen',
-    calories: 380,
-    time: 25
-  },
-  {
-    id: 'chicken-1',
-    name: 'Roasted Chicken',
-    price: 13.99,
-    image: '/images/Roasted_Chicken.jpeg',
-    restaurant: 'African Kitchen',
-    calories: 320,
-    time: 20
-  },
-  {
-    id: 'shawarma-1',
-    name: 'Chicken Shawarma',
-    price: 8.99,
-    image: '/images/Fresh_ shawarma .jpeg',
-    restaurant: 'Shawarma House',
-    calories: 280,
-    time: 15
-  },
-  {
-    id: 'pizza-1',
-    name: 'Pepperoni Pizza',
-    price: 15.99,
-    image: '/images/Pepperoni_pizza.jpeg',
-    restaurant: 'Pizza House',
-    calories: 850,
-    time: 20
-  }
-];
+// Get best sellers from menuData
+const bestSellers = menuItems.slice(0, 6); // Take first 6 items as best sellers
 
 export default function Home() {
   return (
     <MainLayout>
       <div className="container">
         {/* Greeting */}
-        <div className="pt-6 pb-2">
-          <p className="text-gray-500">Hello 👋</p>
-          <h1 className="text-2xl font-bold text-gray-800">Luxury Kitchen</h1>
-        </div>
         
         {/* Categories */}
         <CategoryList categories={categories} />
@@ -111,13 +71,7 @@ export default function Home() {
             {bestSellers.map((food) => (
               <FoodCard
                 key={food.id}
-                id={food.id}
-                name={food.name}
-                price={food.price}
-                image={food.image}
-                restaurant={food.restaurant}
-                calories={food.calories}
-                time={food.time}
+                {...food}
               />
             ))}
           </div>

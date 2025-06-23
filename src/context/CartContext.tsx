@@ -12,6 +12,7 @@ export interface FoodItem {
   quantity: number;
   size?: string;
   ingredients?: string[];
+  addOns?: string[];
 }
 
 interface CartContextType {
@@ -71,8 +72,14 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const addItem = (item: FoodItem) => {
     setItems(prevItems => {
-      // Check if item already exists
-      const existingItemIndex = prevItems.findIndex(i => i.id === item.id);
+      // Create a unique key for the item including size and add-ons
+      const itemKey = `${item.id}-${item.size || 'default'}-${(item.addOns || []).sort().join(',')}`;
+      
+      // Check if exact same item (with same size/add-ons) already exists
+      const existingItemIndex = prevItems.findIndex(i => {
+        const existingKey = `${i.id}-${i.size || 'default'}-${(i.addOns || []).sort().join(',')}`;
+        return existingKey === itemKey;
+      });
       
       if (existingItemIndex >= 0) {
         // Update quantity of existing item
@@ -83,8 +90,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         };
         return updatedItems;
       } else {
-        // Add new item
-        return [...prevItems, item];
+        // Add new item with unique key
+        return [...prevItems, { ...item, id: itemKey }];
       }
     });
   };

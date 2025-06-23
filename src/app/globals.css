@@ -45,3 +45,23 @@ body {
     @apply bg-white rounded-xl shadow-sm overflow-hidden transition-shadow duration-200 hover:shadow-md;
   }
 }
+
+/* Leaflet Map Styles */
+@layer utilities {
+  .custom-marker {
+    background: transparent;
+    border: none;
+  }
+  
+  .leaflet-container {
+    @apply rounded-xl;
+  }
+  
+  .leaflet-popup-content-wrapper {
+    @apply rounded-lg;
+  }
+  
+  .leaflet-popup-content {
+    @apply text-sm;
+  }
+}
